@@ -9,19 +9,19 @@ studentmaker <- function(person){ #write a function that takes labels a students
   class(student) <- "student" #creates the class for student
   return(student)
 }
-stud <- studentmaker("Draco") #
+stud <- studentmaker("Draco") #vectorize the studentmaker by labelling the student
 
 
 matrixHog <- matrix(sample(1:100, 16), ncol = 4) #a matrix to weigh the traits of each student
 
 #Part 2
-sort.student <- function(x, y){
-  if(length(y) != 16){
+sort.student <- function(x, y){ #method to sort the students
+  if(length(y) != 16){ #if the matrix inputed isn't 16 (due to 1*4 matrix for the student)
    return("Second argument must be a matrix with 16 observations")
   }
-  a = matrix(c(x$courage, x$ambition, x$intelligence, x$effort), ncol = 1)
-  b = y%*%a
-  if(identical(b[1], max(b))){
+  a = matrix(c(x$courage, x$ambition, x$intelligence, x$effort), ncol = 1) #subset the student matrix
+  b = y%*%a #multiply the matrices
+  if(identical(b[1], max(b))){ #find the weighted averages of each calculated matrix to return the student's house
     return("GRYFFINDOR!")
   } else if(identical(b[2], max(b))){
     return("SLYTHERIN!")
@@ -35,11 +35,11 @@ sort.student <- function(x, y){
 }
 
 
-house <- sort.student(stud, matrixHog)
+house <- sort.student(stud, matrixHog) #vectorize the house with appropriate x and y
 
 #Part 3
 
-if(house == "GRYFFINDOR!"){ 
+if(house == "GRYFFINDOR!"){  #assign new classes using structure which takes a vector of values and assigns them class(es)
   stud <- structure(stud, class = c("student", "Gryffindor"))
 } else if (house == "SLYTHERIN!") {
   stud <- structure(stud, class = c("student", "Slytherin"))
@@ -52,26 +52,49 @@ if(house == "GRYFFINDOR!"){
 
 #Part 4
 
-Gryffindor_Tower <- new.env()
+Gryffindor_Tower <- new.env() #set up 4 new environments
 Black_Lake <- new.env()
 Ravenclaw_Tower <- new.env()
 Basement <- new.env()
 
 
 
-curfew <- function (y) {
-  if(class(y)[2] %in% c("Gryffindor") == TRUE){ 
-    assign(deparse(substitute(y)), y, envir = Gryffindor_Tower)
-  } else if (class(y)[2] %in% c("Slytherin") == TRUE) {
-    assign("y", y, envir = Black_Lake)
-  } else if (class(y)[2] %in% c("Ravenclaw") == TRUE) {
-    assign("y", y, envir = Ravenclaw_Tower)
-  } else if (class(y)[2] %in% c("Hufflepuff") == TRUE){
-    assign(deparse(substitute(y)), y, envir = Basement)
-  }
-  rm(as.character(y$name), envir = globalenv())
+curfew <- function (x) { #create a curfew method
+  UseMethod("curfew")
 }
 
-curfew(stud)
-ls(Basement)
+curfew.Gryffindor <- function(x){ #if the second class is gryffindor, assign the student to Gryffindor_Tower
+  if(class(x)[2] %in% c("Gryffindor") == TRUE){ 
+    assign(deparse(substitute(x)), x, envir = Gryffindor_Tower)
+    name <- deparse(substitute(x))
+    rm(list = ls(envir=globalenv())[grep(name, ls(envir = globalenv()))], envir = globalenv()) #unlist the student from the global environment
+  } 
+}
+
+curfew.Slytherin <- function(x){
+  if (class(x)[2] %in% c("Slytherin") == TRUE) {#if the second class is Slytherin, assign the student to Black_Lake
+    assign(deparse(substitute(x)), x, envir = Black_Lake)
+    name <- deparse(substitute(x))
+    rm(list = ls(envir=globalenv())[grep(name, ls(envir = globalenv()))], envir = globalenv())
+  }  
+} 
+
+curfew.Ravenclaw <- function(x){
+  if (class(x)[2] %in% c("Ravenclaw") == TRUE) {#if the second class is Ravenclaw, assign the student to Ravenclaw_Tower
+    assign(deparse(substitute(x)), x, envir = Ravenclaw_Tower)
+    name <- deparse(substitute(x))
+    rm(list = ls(envir=globalenv())[grep(name, ls(envir = globalenv()))], envir = globalenv())
+  }
+}
+
+curfew.Hufflepuff <- function(x){#if the second class is Hufflepuff, assign the student to Basement
+  if (class(x)[2] %in% c("Hufflepuff") == TRUE){
+  assign(deparse(substitute(x)), x, envir = Basement)
+    name <- deparse(substitute(x))
+    rm(list = ls(envir=globalenv())[grep(name, ls(envir = globalenv()))], envir = globalenv())
+  }
+} 
+
+curfew(stud) #use Curfew to assign the student to their new environment
+ls(Black_Lake) #list whichever environment to ensure stud was assigned
   
